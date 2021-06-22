@@ -12,7 +12,7 @@ import Control.Lazy as Lazy
 
 import Data.Array as A
 import Data.Bifunctor (lmap)
-import Data.Char.Unicode (isAlphaNum)
+import Data.CodePoint.Unicode (isAlphaNum)
 import Data.Const (Const(..))
 import Data.DateTime as DT
 import Data.Either (Either(..))
@@ -24,6 +24,7 @@ import Data.Int as Int
 import Data.List as L
 import Data.Maybe as M
 import Data.String (joinWith, trim) as S
+import Data.String.CodePoints (codePointFromChar, fromCodePointArray, CodePoint)
 import Data.String.CodeUnits (fromCharArray, singleton, toCharArray) as S
 import Data.Traversable (traverse)
 import Data.Tuple (Tuple(..), fst, snd)
@@ -159,7 +160,7 @@ inlines = L.many inline2 <* PS.eof
       Left e → P.fail e
 
   alphaNumStr ∷ P.Parser String (SD.Inline a)
-  alphaNumStr = SD.Str <$> someOf isAlphaNum
+  alphaNumStr = SD.Str <$> someOf (isAlphaNum <<< codePointFromChar)
 
   emphasis
     ∷ P.Parser String (SD.Inline a)
@@ -255,7 +256,7 @@ inlines = L.many inline2 <* PS.eof
       pure $ map (SD.FormField l r) fe
     where
     label =
-      someOf isAlphaNum
+      someOf (isAlphaNum <<< codePointFromChar)
       <|> (S.fromCharArray
              <<< A.fromFoldable
              <$> (PS.string "[" *> PC.manyTill PS.anyChar (PS.string "]")))

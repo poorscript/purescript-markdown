@@ -9,12 +9,12 @@ module Text.Markdown.SlamDown.Parser.Utils
 
 import Prelude
 
-import Data.Either (fromRight)
+import Data.Either (fromRight')
 import Data.String.CodeUnits (singleton)
 import Data.String.Regex as R
 import Data.String.Regex.Flags as RF
 
-import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe (unsafeCrashWith)
 
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser.Combinators (skipMany)
@@ -24,14 +24,14 @@ isWhitespace ∷ Char → Boolean
 isWhitespace = R.test wsRegex <<< singleton
   where
   wsRegex ∷ R.Regex
-  wsRegex = unsafePartial fromRight $
+  wsRegex = fromRight' (\_ -> unsafeCrashWith "Error parsing whitespace regex") $
     R.regex "^\\s$" RF.noFlags
 
 isEmailAddress ∷ String → Boolean
 isEmailAddress = R.test wsEmail
   where
   wsEmail ∷ R.Regex
-  wsEmail = unsafePartial fromRight $
+  wsEmail = fromRight' (\_ -> unsafeCrashWith "Error parsing isEmail regex") $
     R.regex """^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$""" RF.noFlags
 
 parens ∷ ∀ a. Parser String a → Parser String a
